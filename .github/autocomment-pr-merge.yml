@@ -1,36 +1,22 @@
-name: Auto Comment on PR Merge
-
+name: Comment on PR Closure
 on:
-  pull_request:
-    types: [closed]
-
-permissions:
-  issues: write
-  pull-requests: write
+  pull_request_target:
+    types:
+      - closed
 
 jobs:
   comment:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Add Comment to Issue
-      uses: actions/github-script@v5
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const issueNumber = context.payload.pull_request.number;
-          const repoName = context.repo.repo;
-          const ownerName = context.repo.owner;
-
-          const commentBody = `🎉 Your pull request has been successfully merged! 🎉 Thank you for your valuable contribution to our project. Your efforts are greatly appreciated. Feel free to reach out if you have any more contributions or if there's anything else we can assist you with. Keep up the fantastic work! 🚀`;
-
-          github.rest.issues.createComment({
-            owner: ownerName,
-            repo: repoName,
-            issue_number: issueNumber,
-            body: commentBody
-          });
+      - name: Comment on PR Closure
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          script: |
+            const { owner, repo, number } = context.issue;
+            const commentAuthor = context.payload.pull_request.user.login;
+            const commentBody = `Thank you  @${commentAuthor} , for your valuable time and contribution in our FrontEnd 💗. \n It’s our GameZone, so Let’s build this GameZone altogether !!🤝\n  Hoping to see you soon with another PR again 😇 \n Wishing you all the best for your journey into Open Source🚀
+            `;
+            await github.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
+            console.log(`Commented on the closed PR: ${commentBody}.`);

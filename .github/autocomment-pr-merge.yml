@@ -18,17 +18,19 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Add Comment to Issue
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        COMMENT=$(cat <<EOF
-        {
-          "body": "🎉 Your pull request has been successfully merged! 🎉 Thank you for your valuable contribution to our project. Your efforts are greatly appreciated. Feel free to reach out if you have any more contributions or if there's anything else we can assist you with. Keep up the fantastic work! 🚀"
-        }
-        EOF
-        )
-        curl -X POST \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-          -d "$COMMENT"
+      uses: actions/github-script@v5
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const issueNumber = context.payload.pull_request.number;
+          const repoName = context.repo.repo;
+          const ownerName = context.repo.owner;
+
+          const commentBody = `🎉 Your pull request has been successfully merged! 🎉 Thank you for your valuable contribution to our project. Your efforts are greatly appreciated. Feel free to reach out if you have any more contributions or if there's anything else we can assist you with. Keep up the fantastic work! 🚀`;
+
+          github.rest.issues.createComment({
+            owner: ownerName,
+            repo: repoName,
+            issue_number: issueNumber,
+            body: commentBody
+          });
